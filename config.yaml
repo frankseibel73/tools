@@ -1,0 +1,11 @@
+mappings:
+  - excel_file: data1.xlsx
+    worksheets:
+      - name: Sheet1
+        table: table1
+      - name: Sheet2
+        table: table2
+  - excel_file: data2.xlsx
+    worksheets:
+      - name: Customers
+        table: customer_table
