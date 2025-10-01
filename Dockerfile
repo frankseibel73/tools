@@ -14,7 +14,7 @@ WORKDIR /app
 
 # Clone your repo (replace with your Git URL)
 # Or you can COPY . if you’re building locally
-RUN git clone https://github.com/your-username/your-repo.git repo
+RUN git clone https://github.com/frankseibel73/tools repo
 
 # Install dependencies (adjust based on your scripts)
 COPY requirements.txt /app/

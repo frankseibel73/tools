@@ -25,7 +25,7 @@ def list_excel_sheets(folder_path):
     return workbook_info
 
 if __name__ == "__main__":
-    folder = "path/to/your/folder"  # <-- change this
+    folder = "/data"  # <-- change this
     results = list_excel_sheets(folder)
 
     print("Found the following workbooks and worksheets:")
