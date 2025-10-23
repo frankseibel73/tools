@@ -8,7 +8,7 @@ def load_config(config_path):
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
-def compare_dataframes(df_excel, df_sql, excel_file, sheet, table):
+def compare_dataframes(df_excel, df_sql, excel_file, sheet, table, ignore_missing_excel_cols=False):
     import re
     def clean_value(val):
         if pd.isna(val) or val is None:
@@ -33,11 +33,13 @@ def compare_dataframes(df_excel, df_sql, excel_file, sheet, table):
         missing_in_sql = sorted(list(excel_cols - sql_cols))
         msg = f"[{excel_file}:{sheet}] vs [{table}] - Column mismatch: " \
               f"Excel {len(df_excel.columns)} vs SQL {len(df_sql.columns)}"
-        if missing_in_excel:
+        if missing_in_excel and not ignore_missing_excel_cols:
             msg += f"; Missing in Excel: {missing_in_excel}"
         if missing_in_sql:
             msg += f"; Missing in SQL: {missing_in_sql}"
-        results.append(msg)
+        # Only append if not ignoring all missing columns in Excel
+        if not (ignore_missing_excel_cols and missing_in_excel and not missing_in_sql):
+            results.append(msg)
     
     # Compare row counts
     if len(df_excel) != len(df_sql):
@@ -116,7 +118,7 @@ def compare_dataframes(df_excel, df_sql, excel_file, sheet, table):
                        f"Excel shape {df_excel_common.shape} vs SQL shape {df_sql_common.shape}")
     return results
 
-def main(config_path, sqlite_db, output_path="comparison_report.txt"):
+def main(config_path, sqlite_db, output_path="comparison_report.txt", ignore_missing_excel_cols=False):
     config = load_config(config_path)
     conn = sqlite3.connect(sqlite_db)
     all_results = []
@@ -132,7 +134,7 @@ def main(config_path, sqlite_db, output_path="comparison_report.txt"):
             df_sql = pd.read_sql_query(f"SELECT * FROM {table}", conn)
 
             # Compare
-            results = compare_dataframes(df_excel, df_sql, excel_file, sheet, table)
+            results = compare_dataframes(df_excel, df_sql, excel_file, sheet, table, ignore_missing_excel_cols=ignore_missing_excel_cols)
             if results:
                 all_results.extend(results)
             else:
@@ -151,6 +153,7 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", default="config.yaml", help="Path to YAML config file (default: config.yaml)")
     parser.add_argument("-d", "--db", default="database.sqlite", help="Path to SQLite database file (default: database.sqlite)")
     parser.add_argument("-o", "--output", default="comparison_report.txt", help="Base name for output report file (default: comparison_report.txt)")
+    parser.add_argument("--ignore-missing-excel-cols", action="store_true", help="Ignore missing columns in Excel that are present in the database table.")
     args = parser.parse_args()
     # Add date and time stamp to output file name
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -159,4 +162,4 @@ if __name__ == "__main__":
         output_file = f"{base}_{timestamp}.{ext}"
     else:
         output_file = f"{args.output}_{timestamp}"
-    main(args.config, args.db, output_file)
+    main(args.config, args.db, output_file, ignore_missing_excel_cols=args.ignore_missing_excel_cols)
