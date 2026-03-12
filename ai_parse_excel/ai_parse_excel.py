@@ -6,7 +6,7 @@ import time
 LM_URL = "http://192.168.2.3:1234v1/chat/completions"
 MODEL = "deepseek-coder-v2-lite-instruct"
 
-df = pd.read_excel("time_entries.xlsx")
+df = pd.read_excel("/data/time_entries.xlsx")
 
 def analyze_entry(text):
 
@@ -58,4 +58,4 @@ analysis_df = pd.DataFrame(results)
 
 df = pd.concat([df, analysis_df], axis=1)
 
-df.to_excel("time_entries_analyzed.xlsx", index=False)
+df.to_excel("/data/time_entries_analyzed.xlsx", index=False)
